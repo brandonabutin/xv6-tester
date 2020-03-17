@@ -435,31 +435,33 @@ void pagefault(void) {
     curproc->killed = 1;
     return;
   }
-  pa = PTE_ADDR(*pte);
-  acquire(&lock);
-  if(refcnt[pa >> PTXSHIFT] == 1) {
-    release(&lock);
-    *pte |= PTE_W;
-  } else if(refcnt[pa >> PTXSHIFT] > 1) {
-    release(&lock);
-    if((mem = kalloc()) == 0) {
-      cprintf("pagefault: out of memory\n");
+  if((*pte & PTE_P) && !(*pte & PTE_W)) {
+    pa = PTE_ADDR(*pte);
+    acquire(&lock);
+    if(refcnt[pa >> PTXSHIFT] == 1) {
+      release(&lock);
+      *pte |= PTE_W;
+    } else if(refcnt[pa >> PTXSHIFT] > 1) {
+      release(&lock);
+      if((mem = kalloc()) == 0) {
+        cprintf("pagefault: out of memory\n");
+        curproc->killed = 1;
+        return;
+      }
+      memmove(mem, (char*)P2V(pa), PGSIZE);
+      acquire(&lock);
+      refcnt[pa >> PTXSHIFT]--;
+      refcnt[V2P(mem) >> PTXSHIFT]++;
+      release(&lock);
+      *pte = V2P(mem) | PTE_U | PTE_P | PTE_W;
+    } else {
+      release(&lock);
+      cprintf("pagefault: va 0x%x mapped to unreferenced page\n", va);
       curproc->killed = 1;
       return;
     }
-    memmove(mem, (char*)P2V(pa), PGSIZE);
-    acquire(&lock);
-    refcnt[pa >> PTXSHIFT]--;
-    refcnt[V2P(mem) >> PTXSHIFT]++;
-    release(&lock);
-    *pte = V2P(mem) | PTE_U | PTE_P | PTE_W;
-  } else {
-    release(&lock);
-    cprintf("pagefault: va 0x%x mapped to unreferenced page\n", va);
-    curproc->killed = 1;
-    return;
+    lcr3(V2P(curproc->pgdir));
   }
-  lcr3(V2P(curproc->pgdir));
   return;
 }
 
