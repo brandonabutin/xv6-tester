@@ -379,6 +379,7 @@ copyuvm(pde_t *pgdir, uint sz)
 
 bad:
   freevm(d);
+  lcr3(V2P(pgdir));
   return 0;
 }
 
@@ -430,6 +431,11 @@ void pagefault(void) {
   uint va = rcr2();
   struct proc *curproc = myproc();
 
+  if(va >= KERNBASE) {
+    cprintf("pagefault: va 0x%x mapped to kernel\n", va);
+    curproc->killed = 1;
+    return;
+  }
   if((pte = walkpgdir(curproc->pgdir, (void*)va, 0)) == 0) {
     cprintf("pagefault: va 0x%x mapped to NULL pte\n", va);
     curproc->killed = 1;
@@ -461,6 +467,9 @@ void pagefault(void) {
       return;
     }
     lcr3(V2P(curproc->pgdir));
+  } else {
+    cprintf("pagefault: unexpected pte at va 0x%x\n", va);
+    curproc->killed = 1;
   }
   return;
 }
