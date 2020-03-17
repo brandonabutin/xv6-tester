@@ -3,10 +3,11 @@
 #include "stat.h"
 
 int main(void) {
+  printf(1, "Number of initial free pages: %d\n", getfreepages());
   int data = 1;
   int pid;
 
-  printf(1, "Number of initial free pages: %d\n", getfreepages());
+  printf(1, "Number of free pages after initializing variables: %d\n", getfreepages());
 
   pid = fork();
   if(pid == 0) {
@@ -35,7 +36,7 @@ int main(void) {
       printf(1, "Number of free pages in parent after wait: %d\n", getfreepages());
     }
   }
-  
+
   (void)data;
 
   exit();
