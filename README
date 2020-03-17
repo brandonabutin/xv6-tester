@@ -53,11 +53,16 @@ In order to run xv6:
 
 Copy on Write Implementation:
 In vm.c:
+- Add global variables:
+    - refcnt: array to keep track of reference count for each page
+    - lock: to prevent corruption of global refcnt
 - In copyuvm: make PTEs unwritable, remove new page allocation, map child
     page to current page, increase refcnt for current page, reinstall pgtab
 - In inituvm: increase refcnt
 - In allocuvm: decrease refcnt
 - In deallocuvm: decrease refcnt, if refcnt == 0 then free page
+- In pagefault: implement page fault handler that allocates a new page when
+    you attempt to write to copied pages
 - Tests in test_copyonwrite.c
 
 ASLR Implementation:
@@ -65,7 +70,7 @@ In proc.h:
 - Add new field to proc to keep track of stack location
 In exec.c:
 - Add psedo-random function
-- initialize stack to pseudorandom number of pages past sz
+- Initialize stack to pseudorandom number of pages past sz
 - Let heap be located directly after program data/code at sz
 In vm.c:
 - In copyuvm: add second for loop to copy stack data
