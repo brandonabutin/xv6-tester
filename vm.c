@@ -337,6 +337,21 @@ copyuvm(pde_t *pgdir, uint sz)
       goto bad;
     }
   }
+  for(i = 0; i < 1; i += 1){
+    if((pte = walkpgdir(pgdir, (void *)(myproc()->stack - PGSIZE), 0)) == 0)
+      panic("copyuvm: pte should exist");
+    if(!(*pte & PTE_P))
+      panic("copyuvm: page not present");
+    pa = PTE_ADDR(*pte);
+    flags = PTE_FLAGS(*pte);
+    if((mem = kalloc()) == 0)
+      goto bad;
+    memmove(mem, (char*)P2V(pa), PGSIZE);
+    if(mappages(d, (void*)(myproc()->stack - PGSIZE), PGSIZE, V2P(mem), flags) < 0) {
+      kfree(mem);
+      goto bad;
+    }
+  }
   return d;
 
 bad:
@@ -391,4 +406,3 @@ copyout(pde_t *pgdir, uint va, void *p, uint len)
 // Blank page.
 //PAGEBREAK!
 // Blank page.
-
