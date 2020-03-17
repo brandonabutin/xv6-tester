@@ -423,14 +423,14 @@ copyout(pde_t *pgdir, uint va, void *p, uint len)
   return 0;
 }
 
-void pagefault(struct trapframe *tf) {
+void pagefault(void) {
   pte_t *pte;
   char *mem;
   uint pa;
   uint va = rcr2();
   struct proc *curproc = myproc();
 
-  if((pte = walkpgdir(curproc->pgdir, (void*)va, 0) == 0) {
+  if(pte = walkpgdir(curproc->pgdir, (void*)va, 0) == 0) {
     cprintf("pagefault: va 0x%x mapped to NULL pte\n", va);
     curproc->killed = 1;
     return;
