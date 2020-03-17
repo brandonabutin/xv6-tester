@@ -78,9 +78,7 @@ trap(struct trapframe *tf)
     lapiceoi();
     break;
   case T_PGFLT:
-    cprintf("pid %d %s: trap %d addr 0x%x\n", myproc()->pid,
-            myproc()->name, tf->trapno, rcr2());
-    myproc()->killed = 1;
+    pagefault(tf);
     break;
   //PAGEBREAK: 13
   default:
