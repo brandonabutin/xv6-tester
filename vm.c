@@ -48,7 +48,6 @@ walkpgdir(pde_t *pgdir, const void *va, int alloc)
     if(!alloc || (pgtab = (pte_t*)kalloc()) == 0)
       return 0;
     // Make sure all those PTE_P bits are zero.
-    cprintf("walkpgdir kalloc va: %p\n", (void*)va);
     memset(pgtab, 0, PGSIZE);
     // The permissions here are overly generous, but they can
     // be further restricted by the permissions in the page table
@@ -356,24 +355,26 @@ copyuvm(pde_t *pgdir, uint sz)
     refcnt[pa >> PTXSHIFT]++;
     release(&lock);
   }
-  for(i = 0; i < 1; i += 1){
-    if((pte = walkpgdir(pgdir, (void *)(myproc()->stack - PGSIZE), 0)) == 0)
-      panic("copyuvm: pte should exist");
-    if(!(*pte & PTE_P))
-      panic("copyuvm: page not present");
-    *pte = *pte & ~PTE_W;
-    pa = PTE_ADDR(*pte);
-    flags = PTE_FLAGS(*pte);
-    // if((mem = kalloc()) == 0)
-    //   goto bad;
-    // memmove(mem, (char*)P2V(pa), PGSIZE);
-    if(mappages(d, (void*)(myproc()->stack - PGSIZE), PGSIZE, pa, flags) < 0) {
-      //kfree(mem);
-      goto bad;
+  if(myproc()->stack) {
+    for(i = 0; i < 1; i += 1){
+      if((pte = walkpgdir(pgdir, (void *)(myproc()->stack - PGSIZE), 0)) == 0)
+        panic("copyuvm: pte should exist");
+      if(!(*pte & PTE_P))
+        panic("copyuvm: page not present");
+      *pte = *pte & ~PTE_W;
+      pa = PTE_ADDR(*pte);
+      flags = PTE_FLAGS(*pte);
+      // if((mem = kalloc()) == 0)
+      //   goto bad;
+      // memmove(mem, (char*)P2V(pa), PGSIZE);
+      if(mappages(d, (void*)(myproc()->stack - PGSIZE), PGSIZE, pa, flags) < 0) {
+        //kfree(mem);
+        goto bad;
+      }
+      acquire(&lock);
+      refcnt[pa >> PTXSHIFT]++;
+      release(&lock);
     }
-    acquire(&lock);
-    refcnt[pa >> PTXSHIFT]++;
-    release(&lock);
   }
   lcr3(V2P(pgdir));
   return d;

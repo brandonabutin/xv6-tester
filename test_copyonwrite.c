@@ -2,14 +2,14 @@
 #include "user.h"
 #include "stat.h"
 
+int data = 1;
+
 int main(void) {
   printf(1, "Number of initial free pages: %d\n", getfreepages());
-  int data = 1;
+
   int pid;
-
-  printf(1, "Number of free pages after initializing variables: %d\n", getfreepages());
-
   pid = fork();
+
   if(pid == 0) {
     printf(1, "Number of free pages in child before changing data: %d\n", getfreepages());
     data = 2;
