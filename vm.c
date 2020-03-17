@@ -424,7 +424,42 @@ copyout(pde_t *pgdir, uint va, void *p, uint len)
 }
 
 void pagefault(struct trapframe *tf) {
-  cprintf("pagefault");
+  pte_t *pte;
+  char *mem;
+  uint pa;
+  uint va = rcr2();
+  struct proc *curproc = myproc();
+
+  if((pte = walkpgdir(curproc->pgdir, (void*)va, 0) == 0) {
+    cprintf("pagefault: va 0x%x mapped to NULL pte\n", va);
+    curproc->killed = 1;
+    return;
+  }
+  pa = PTE_ADDR(*pte);
+  acquire(&lock);
+  if(refcnt[pa >> PTXSHIFT] == 1) {
+    release(&lock);
+    *pte |= PTE_W;
+  } else if(refcnt[pa >> PTXSHIFT] > 1) {
+    release(&lock);
+    if((mem = kalloc()) == 0) {
+      cprintf("pagefault: out of memory\n");
+      curproc->killed = 1;
+      return;
+    }
+    memmove(mem, (char*)P2V(pa), PGSIZE);
+    acquire(&lock);
+    refcnt[pa >> PTXSHIFT]--;
+    refcnt[V2P(mem) >> PTXSHIFT]++;
+    release(&lock);
+    *pte = V2P(mem) | PTE_U | PTE_P | PTE_W;
+  } else {
+    release(&lock);
+    cprintf("pagefault: va 0x%x mapped to unreferenced page\n", va);
+    curproc->killed = 1;
+    return;
+  }
+  lcr3(V2P(curproc->pgdir));
   return;
 }
 
