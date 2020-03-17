@@ -77,7 +77,11 @@ trap(struct trapframe *tf)
             cpuid(), tf->cs, tf->eip);
     lapiceoi();
     break;
-
+  case T_PGFLT:
+    cprintf("pid %d %s: trap %d addr 0x%x\n", myproc()->pid,
+            myproc()->name, tf->trapno, rcr2());
+    myproc()->killed = 1;
+    break;
   //PAGEBREAK: 13
   default:
     if(myproc() == 0 || (tf->cs&3) == 0){
