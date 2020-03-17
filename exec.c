@@ -18,6 +18,7 @@ exec(char *path, char **argv)
   struct proghdr ph;
   pde_t *pgdir, *oldpgdir;
   struct proc *curproc = myproc();
+  cprintf("Exec pid: %d %s\n", curproc->pid, curproc->name);
 
   begin_op();
 

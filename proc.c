@@ -183,6 +183,7 @@ fork(void)
   int i, pid;
   struct proc *np;
   struct proc *curproc = myproc();
+  cprintf("Fork pid: %d %s\n", curproc->pid, curproc->name);
 
   // Allocate process.
   if((np = allocproc()) == 0){
