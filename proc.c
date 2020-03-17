@@ -160,7 +160,6 @@ growproc(int n)
 {
   uint sz;
   struct proc *curproc = myproc();
-  cprintf("Growproc %d bytes, pid: %d %s \n", n, curproc->pid, curproc->name);
 
   sz = curproc->sz;
   if(n > 0){

@@ -38,11 +38,37 @@ ERROR REPORTS
 We switched our focus to xv6 on RISC-V; see the mit-pdos/xv6-riscv.git
 repository on github.com.
 
+-----------------------------------------------------------------------------
+
 BUILDING AND RUNNING XV6
 
-To build xv6 on an x86 ELF machine (like Linux or FreeBSD), run
-"make". On non-x86 or non-ELF machines (like OS X, even on x86), you
-will need to install a cross-compiler gcc suite capable of producing
-x86 ELF binaries (see https://pdos.csail.mit.edu/6.828/).
-Then run "make TOOLPREFIX=i386-jos-elf-". Now install the QEMU PC
-simulator and run "make qemu".
+This repository contains code for viewing purposed only.
+In order to run xv6:
+- docker pull docker pull brandonabutin/xv6-test:aslr
+- docker run --rm -it brandonabutin/xv6-test:aslr bash
+- make qemu-nox
+- Run command 5 times to see stack movement: test_aslr
+- Run command to observe copy on write change: test_copy_on_write
+- Exit with ctr+a x
+
+Copy on Write Implementation:
+In vm.c:
+- In copyuvm: make PTEs unwritable, remove new page allocation, map child
+    page to current page, increase refcnt for current page, reinstall pgtab
+- In inituvm: increase refcnt
+- In allocuvm: decrease refcnt
+- In deallocuvm: decrease refcnt, if refcnt == 0 then free page
+- Tests in test_copyonwrite.c
+
+ASLR Implementation:
+In proc.h:
+- Add new field to proc to keep track of stack location
+In exec.c:
+- Add psedo-random function
+- initialize stack to pseudorandom number of pages past sz
+- Let heap be located directly after program data/code at sz
+In vm.c:
+- In copyuvm: add second for loop to copy stack data
+In syscall.c:
+- Remove checks that use sz to verify data is in stack
+- Tests in test_aslr.c
