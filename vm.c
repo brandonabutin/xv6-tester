@@ -430,7 +430,7 @@ void pagefault(void) {
   uint va = rcr2();
   struct proc *curproc = myproc();
 
-  if(pte = walkpgdir(curproc->pgdir, (void*)va, 0) == 0) {
+  if((pte = walkpgdir(curproc->pgdir, (void*)va, 0)) == 0) {
     cprintf("pagefault: va 0x%x mapped to NULL pte\n", va);
     curproc->killed = 1;
     return;
