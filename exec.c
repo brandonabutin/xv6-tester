@@ -43,7 +43,6 @@ exec(char *path, char **argv)
   struct proghdr ph;
   pde_t *pgdir, *oldpgdir;
   struct proc *curproc = myproc();
-  cprintf("Exec pid: %d %s\n", curproc->pid, curproc->name);
 
   begin_op();
 
@@ -127,7 +126,6 @@ exec(char *path, char **argv)
   curproc->tf->esp = sp;
   switchuvm(curproc);
   freevm(oldpgdir);
-  cprintf("End Exec\n");
   return 0;
 
  bad:
