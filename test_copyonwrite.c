@@ -35,6 +35,8 @@ int main(void) {
       printf(1, "Number of free pages in parent after wait: %d\n", getfreepages());
     }
   }
+  
+  (void)data;
 
   exit();
 }
