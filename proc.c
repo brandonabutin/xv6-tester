@@ -220,6 +220,8 @@ fork(void)
 
   release(&ptable.lock);
 
+  cprintf("End Fork\n");
+
   return pid;
 }
 

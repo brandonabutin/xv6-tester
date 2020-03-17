@@ -62,7 +62,7 @@ mappages(pde_t *pgdir, void *va, uint size, uint pa, int perm)
 {
   char *a, *last;
   pte_t *pte;
-  cprintf("mappages va: %d\n", va);
+  cprintf("mappages va: %p\n", (void*)va);
 
   a = (char*)PGROUNDDOWN((uint)va);
   last = (char*)PGROUNDDOWN(((uint)va) + size - 1);
