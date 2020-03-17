@@ -42,9 +42,9 @@ repository on github.com.
 
 BUILDING AND RUNNING XV6
 
-This repository contains code for viewing purposed only.
+This repository contains code for viewing purposes only.
 In order to run xv6:
-- docker pull docker pull brandonabutin/xv6-test:aslr
+- docker pull brandonabutin/xv6-test:aslr
 - docker run --rm -it brandonabutin/xv6-test:aslr bash
 - make qemu-nox
 - Run command 5 times to see stack movement: test_aslr
